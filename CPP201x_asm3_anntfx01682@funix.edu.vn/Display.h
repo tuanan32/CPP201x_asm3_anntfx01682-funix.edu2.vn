@@ -1,13 +1,13 @@
 #ifndef DISPLAY_H_
 #define DISPLAY_H_
 
-#include "Setting.h"
 #include <iostream>
 #include <string>
+#include <iomanip>
 using namespace std;
 
-class Display : public Setting{
-
+class Display 
+{
 public:
 	Display();
 	Display(const Display& u);
@@ -20,17 +20,7 @@ public:
 	void set_light_level(int data);
 	void set_screen_light_level(int data);
 	void set_taplo_light_level(int data);
-	string layMaSoCaNhan();
-	string layTenChuXe();
-	string layEmail();
-	int layOdo();
-	int layServiceRemind();
 	void xuatThongTinRieng();	//Xuat thong tin cua lop Display
-	void set_car_name(string data);
-	void set_personal_key(string data);
-	void set_email(string data);
-	void set_odo(int data);
-	void set_service_remind(int data);
 	string* layThongTinRieng(string* array); //Lay thong tin rieng cua lop con ke thua
 private:
 	int light_level;

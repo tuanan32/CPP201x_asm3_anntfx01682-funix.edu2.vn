@@ -7,6 +7,18 @@ Setting::Setting()
 	email = "";
 	odo = 0;
 	service_remind = 0;
+	general = new General;
+	sound = new Sound;
+	disp = new Display;
+	general->set_language("1");	//Khoi tao gia tri mac dinh
+	general->set_timeZone("1");
+	sound->set_call_level(1);
+	sound->set_media_level(1);
+	sound->set_navi_level(1);
+	sound->set_notification_level(1);
+	disp->set_light_level(1);
+	disp->set_screen_light_level(1);
+	disp->set_taplo_light_level(1);
 }
 
 Setting::Setting(const Setting& u)
@@ -66,6 +78,21 @@ void Setting::setServiceRemind(int data)
 	service_remind = data;
 }
 
+General* Setting::getGeneral()
+{
+	return general;
+}
+
+Sound* Setting::getSound()
+{
+	return sound;
+}
+
+Display* Setting::getDisplay()
+{
+	return disp;
+}
+
 void Setting::nhapThongTin(){
 	string name;
 
@@ -118,21 +145,143 @@ int Setting::layServiceRemind()
 	return getServiceRemind();
 }
 
-void Setting::thayDoiThongTinChung(Setting& u)
+void Setting::thayDoiThongTinChung(Setting* u)
 {
-	setCarName(u.getCarName());
-	setEmail(u.getEmail());
-	setOdo(u.getODO());
-	setServiceRemind(u.getServiceRemind());
+	setCarName(u->getCarName());
+	setEmail(u->getEmail());
+	setOdo(u->getODO());
+	setServiceRemind(u->getServiceRemind());
+}
+
+void Setting::nhapThongTinChung(string carName, string personalKey, string email, int odo, int serviceRemind)
+{
+	setCarName(carName);
+	setPersonalKey(personalKey);
+	setEmail(email);
+	setOdo(odo);
+	setServiceRemind(serviceRemind);
+}
+
+void Setting::nhapThongTinSound()
+{
+	sound->nhapThongTin();
+}
+
+void Setting::nhapThongTinDisplay()
+{
+	disp->nhapThongTin();
+}
+
+void Setting::nhapThongTinGeneral(string timezone, string language)
+{
+	getGeneral()->set_timeZone(timezone);
+	getGeneral()->set_language(language);
+}
+
+void Setting::thayDoiThongTinSound(Setting* p)
+{
+	getSound()->set_call_level(p->getSound()->get_call_level());
+	getSound()->set_media_level(p->getSound()->get_media_level());
+	getSound()->set_navi_level(p->getSound()->get_navi_level());
+	getSound()->set_notification_level(p->getSound()->get_notification_level());
+}
+
+void Setting::thayDoiThongTinDisplay(Setting* p)
+{
+	getDisplay()->set_light_level(p->getDisplay()->get_light_level());
+	getDisplay()->set_screen_light_level(p->getDisplay()->get_screen_light_level());
+	getDisplay()->set_taplo_light_level(p->getDisplay()->get_taplo_light_level());
+}
+
+void Setting::thayDoiThongTinGeneral(Setting* p)
+{
+	getGeneral()->set_language(p->getGeneral()->get_language());
+	getGeneral()->set_timeZone(p->getGeneral()->get_timeZone());
 }
 
 void Setting::xuatThongTinRieng()
 {
+	cout << " --- Thong tin Display ---\n";
+	getDisplay()->xuatThongTinRieng();
+	cout << " --- Thong tin Sound ---\n";
+	getSound()->xuatThongTinRieng();
+	cout << " --- Thong tin General ---\n";
+	getGeneral()->xuatThongTinRieng();
 }
 
-string* Setting::layThongTinRieng(string* array)
+void Setting::xuatThongTinGeneral()
 {
-	return nullptr;
+	getGeneral()->xuatThongTin();
+}
+
+void Setting::xuatThongTinSound()
+{
+	getSound()->xuatThongTin();
+}
+
+void Setting::xuatThongTinDisplay()
+{
+	getDisplay()->xuatThongTin();
+}
+
+void Setting::nhapThongTinSound(int mediaLevel, int callLevel, int naviLevel, int notiLevel)
+{
+	getSound()->set_media_level(mediaLevel);
+	getSound()->set_call_level(callLevel);
+	getSound()->set_navi_level(naviLevel);
+	getSound()->set_notification_level(notiLevel);
+}
+
+void Setting::nhapThongTinDisplay(int lightLevel, int screenLightLevel, int taploLightLevel)
+{
+	getDisplay()->set_light_level(lightLevel);
+	getDisplay()->set_screen_light_level(screenLightLevel);
+	getDisplay()->set_taplo_light_level(taploLightLevel);
+}
+
+string Setting::getTimezone()
+{
+	return getGeneral()->get_timeZone();
+}
+
+string Setting::getLanguage()
+{
+	return getGeneral()->get_language();
+}
+
+int Setting::getMediaLevel()
+{
+	return getSound()->get_media_level();
+}
+
+int Setting::getCallLevel()
+{
+	return getSound()->get_call_level();
+}
+
+int Setting::getNaviLevel()
+{
+	return getSound()->get_navi_level();
+}
+
+int Setting::getNotiLevel()
+{
+	return getSound()->get_notification_level();
+}
+
+int Setting::getLightLevel()
+{
+	return getDisplay()->get_light_level();
+}
+
+int Setting::getScreenLightLevel()
+{
+	return getDisplay()->get_screen_light_level();
+}
+
+int Setting::getTaploLightLevel()
+{
+	return getDisplay()->get_taplo_light_level();
 }
 
 string emailInput()
@@ -312,38 +461,4 @@ int serviceRemindInput(const int& odo) //Truyen thong tin ODO de so sanh voi km 
 			cout << errorName;
 		}
 	} while (true);
-}
-
-int checkLevel(const char* ch)
-{
-	char c[21];
-	int ret;
-
-	do
-	{
-		try
-		{
-			cout << ch;
-			cin.getline(c, 20);
-			if (strlen(c) == 0 || strlen(c) > 1)
-			{
-				throw "\t(!) Nhap so nguyen tu 1 den 5\n";
-			}
-			else
-			{
-				if (c[0] >= 49 && c[0] <= 53)
-				{
-					ret = stoi(c);
-					break;
-				}
-				else
-					throw "\t(!) Nhap so nguyen tu 1 den 5\n";
-			}
-		}
-		catch (const char* errorName)
-		{
-			cout << errorName;
-		}
-	} while (true);
-	return ret;
 }

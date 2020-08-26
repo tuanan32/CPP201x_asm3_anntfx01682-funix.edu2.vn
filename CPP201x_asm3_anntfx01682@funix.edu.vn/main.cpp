@@ -1,14 +1,10 @@
 #include <iostream>
-#include "General.h"
-#include "Display.h"
-#include "Sound.h"
+#include "Setting.h"
 #include "CommonInfo.h"
 #include <fstream>
+using namespace std;
 
-// 3 list luu tru du lieu cho Display, Sound, General voi class Template List
-List<Setting*> display;
-List<Setting*> sound;
-List<Setting*> general;
+vector<Setting*> setting;
 
 vector<CommonInfo> timezoneList;
 vector<CommonInfo> languageList;
@@ -135,52 +131,26 @@ void NhapThongTinCaiDat(){
 }
 
 
-//Thay doi thong tin chung cua du lieu co cung ma so ca nhan voi du lieu vua nhap, trong 2 chuc nang con lai
-//set1, set2: mang luu du lieu cua 2 chuc nang con lai
-//count1, count2: so luong cac phan tu trong mang
-//u: du lieu vua nhap
-void ThayDoiCaiDatChung(List<Setting*> set1, int size1, List<Setting*> set2, int size2, Setting& u)
-{
-	for (int i = 0; i < size1; ++i)
-	{
-		if (set1.get(i)->layMaSoCaNhan().compare(u.layMaSoCaNhan()) == 0)	//Bang 0 khi 2 MSCN giong nhau va tien hanh thay doi 
-		{																	//thong tin chung cua list
-			set1.get(i)->thayDoiThongTinChung(u);
-			break;
-		}
-	}
-
-	for (int i = 0; i < size2; ++i)
-	{
-		if (set2.get(i)->layMaSoCaNhan().compare(u.layMaSoCaNhan()) == 0)
-		{
-			set2.get(i)->thayDoiThongTinChung(u);
-			break;
-		}
-	}
-}
-
-
 void NhapThongTinCaiDat_Sound()
 {
 	char continues = 'n';
 	do{
-		cout << " NHAP THONG TIN SOUND, XE SO " << sound.size() + 1 << endl;
+		cout << " NHAP THONG TIN SOUND, XE SO " << setting.size() + 1 << endl;
 		
 		bool found = false;	//true: tai khoan ton tai,  false: tai khoan khong ton tai
-		Sound snd;
-		Setting* p;	//Con tro tro den vung nho co gia tri giong voi bien 'snd'
+		Setting* p = new Setting;	//Con tro de luu thong tin nhap vao
 
-		snd.nhapThongTin();	//Nhap thong tin cho bien snd
-		ThayDoiCaiDatChung(display, display.size(), general, general.size(), snd);	//Thay doi thong tin chung cua phan tu (trong 2 list con lai) co MSCN trung voi MSCN cua doi tuong dang nhap
+		p->nhapThongTin();	//Nhap thong tin chung
+		p->nhapThongTinSound();	//Nhap thong tin cho chuc nang Sound
 
 		//Tim MSCN trung khop voi MSCN vua nhap
-		for (int i = 0; i < sound.size(); ++i)
+		for (int i = 0; i < setting.size(); ++i)
 		{
-			if (sound.get(i)->layMaSoCaNhan().compare(snd.layMaSoCaNhan()) == 0)	//So sanh 2 ma so ca nhan
-			{
-				p = new Sound(snd);	//Cap phat vung nho co gia tri bang voi 'snd'
-				sound.changeElement(p, i);	//Thay doi gia tri phan tu thu 'i' trong mang elements_ cua list 'sound' bang 'snd'
+			if (setting[i]->layMaSoCaNhan().compare(p->layMaSoCaNhan()) == 0)	//Bang 0 khi 2 MSCN giong nhau va tien hanh thay doi 
+			{																	//thong tin chung cua list
+				setting[i]->thayDoiThongTinChung(p);
+				setting[i]->thayDoiThongTinSound(p);
+				delete p;//Giai phong vung nho cap phat
 				found = true;
 				break;
 			}
@@ -188,13 +158,10 @@ void NhapThongTinCaiDat_Sound()
 
 		if (found == false)
 		{
-			p = new Sound(snd);	//Cap phat vung nho co gia tri bang voi 'snd'
-			sound.add(p);	//Gan gia tri cho con tro trong mang "elements"_ list "sound"
+			setting.push_back(p);
 		}
 
-		sound.Sap_Xep();//Sap xep mang elements_ cua list "sound" theo thu tu tang dan MSCN
-
-		cout << "TIEP TUC XE SO " << sound.size() + 1 << " ? (y/n): ";
+		cout << "TIEP TUC XE SO " << setting.size() + 1 << " ? (y/n): ";
 		cin >> continues;
 		cout << endl;
 	}while(continues == 'y');
@@ -247,54 +214,49 @@ int ChonTimeZoneVaLanguage(vector<CommonInfo> list)
 			<< setiosflags(ios::left) << list[i].getName() << resetiosflags(ios::left) << endl;//Dinh dang thong tin xuat
 	}
 
-	return isDigits(list.size() - 1);//Chay ham isDigits() de tra ve gia tri selection cua TimeZone hoac Language; tham so la gioi han lon nhat cua lua chon
+	return isDigits(int(list.size()) - 1);//Chay ham isDigits() de tra ve gia tri selection cua TimeZone hoac Language; tham so la gioi han lon nhat cua lua chon
 }
 
 
 void NhapThongTinCaiDat_General()
 {
-	int selection;
+	string timezone, language;
 	char continues = 'n';
 
 	do {
-		cout << " NHAP THONG TIN GENERAL, XE SO " << general.size() + 1 << endl;
+		cout << " NHAP THONG TIN GENERAL, XE SO " << setting.size() + 1 << endl;
 
-		General gen;//Bien de luu thong tin doi tuong General dang nhap
-		Setting* p;	//Con tro tro den vung nho co gia tri giong voi bien 'gen'
-		gen.nhapThongTin();	//Nhap thong tin chung	
+		Setting* p = new Setting;	//Con tro de luu thong tin nhap vao
+		p->nhapThongTin();	//Nhap thong tin chung	
 		bool found = false;	//true: tai khoan ton tai,  false: tai khoan khong ton tai
 
-		ThayDoiCaiDatChung(sound, sound.size(), display, display.size(), gen);//Thay doi thong tin chung cua phan tu (trong 2 list con lai) co MSCN trung voi MSCN cua doi tuong dang nhap
-
 		cout << "\nMOI BAN CHON TIME ZONE\n";
-		selection = ChonTimeZoneVaLanguage(timezoneList);//Lua chon timeZone
-		gen.set_timeZone(to_string(selection));	//Nhap gia tri timeZone cho doi tuong
-
+		timezone = to_string(ChonTimeZoneVaLanguage(timezoneList));//Lua chon timeZone
 
 		cout << "\nMOI BAN CHON LANGUAGE\n";
-		selection = ChonTimeZoneVaLanguage(languageList);//Lua chon language
-		gen.set_language(to_string(selection));	//Nhap gia tri language cho doi tuong
+		language = to_string(ChonTimeZoneVaLanguage(languageList));//Lua chon language
+		
+		p->nhapThongTinGeneral(timezone, language);//Nhap gia tri timezone va language cho doi tuong
 
 		//Tim MSCN trung khop voi MSCN vua nhap
-		for (int i = 0; i < general.size(); ++i)
+		for (int i = 0; i < setting.size(); ++i)
 		{
-			if (general.get(i)->layMaSoCaNhan().compare(gen.layMaSoCaNhan()) == 0)
-			{
-				p = new General(gen);//Cap phat vung nho co gia tri bang voi 'gen'
-				general.changeElement(p, i);//Thay doi gia tri cua bien con tro trong list general tai vi tri i
+			if (setting[i]->layMaSoCaNhan().compare(p->layMaSoCaNhan()) == 0)	//Bang 0 khi 2 MSCN giong nhau va tien hanh thay doi 
+			{																	//thong tin chung cua list
+				setting[i]->thayDoiThongTinChung(p);
+				setting[i]->thayDoiThongTinGeneral(p);
+				delete p;//Giai phong vung nho cap phat
 				found = true;
 				break;
 			}
 		}
+
 		if (found == false)
 		{
-			p = new General(gen);	//Cap phat vung nho co gia tri bang voi 'gen'
-			general.add(p);	//Them p vao mang elements_ cua list general
+			setting.push_back(p);
 		}
 
-		general.Sap_Xep();//Sap xep mang elements_ cua list "general" theo thu tu tang dan MSCN
-
-		cout << "TIEP TUC XE SO " << general.size() + 1 << " ? (y/n): ";
+		cout << "TIEP TUC XE SO " << setting.size() + 1 << " ? (y/n): ";
 		cin >> continues;
 		cout << endl;
 	} while (continues == 'y');
@@ -305,35 +267,35 @@ void NhapThongTinCaiDat_Display()
 {
 	char continues = 'n';
 	do{
-		cout << " NHAP THONG TIN DISPLAY, XE SO " << display.size() + 1 << endl;
+		cout << " NHAP THONG TIN DISPLAY, XE SO " << setting.size() + 1 << endl;
 
-		Display disp;//Bien de luu thong tin doi tuong Display dang nhap
-		Setting* p;	//Con tro tro den vung nho co gia tri giong voi bien 'disp'
+		Setting* p = NULL;	//Con tro de luu thong tin nhap vao
+		p = new Setting;	
+			
 		bool found = false;	//true: tai khoan ton tai,  false: tai khoan khong ton tai
 		
-		disp.nhapThongTin();//Nhap thong tin chung
-		ThayDoiCaiDatChung(sound, sound.size(), general, general.size(), disp);//Thay doi thong tin chung cua phan tu (trong 2 list con lai) co MSCN trung voi MSCN cua doi tuong dang nhap
+		p->nhapThongTin();//Nhap thong tin chung
+		p->nhapThongTinDisplay();//Nhap thong tin Display
 
 		//Tim MSCN trung khop voi MSCN vua nhap
-		for (int i = 0; i < display.size(); ++i)
+		for (int i = 0; i < setting.size(); ++i)
 		{
-			if (display.get(i)->layMaSoCaNhan().compare(disp.layMaSoCaNhan()) == 0)
-			{
-				p = new Display(disp);	//Cap phat vung nho co gia tri bang voi 'disp'
-				display.changeElement(p, i);//Thay doi gia tri cua bien con tro trong list display tai vi tri i
+			if (setting[i]->layMaSoCaNhan().compare(p->layMaSoCaNhan()) == 0)	//Bang 0 khi 2 MSCN giong nhau va tien hanh thay doi 
+			{																	//thong tin chung cua list
+				setting[i]->thayDoiThongTinChung(p);
+				setting[i]->thayDoiThongTinDisplay(p);
+				delete p;//Giai phong vung nho cap phat
 				found = true;
 				break;
 			}
 		}
+
 		if (found == false)
 		{
-			p = new Display(disp);	//Cap phat vung nho co gia tri bang voi 'disp'
-			display.add(p);//Them p vao mang elements_ cua list display
+			setting.push_back(p);
 		}
 
-		display.Sap_Xep();
-
-		cout << "TIEP TUC XE SO " << display.size() + 1 << " ? (y/n): ";
+		cout << "TIEP TUC XE SO " << setting.size() + 1 << " ? (y/n): ";
 		cin >> continues;
 		cout << endl;
 	}while(continues == 'y');
@@ -487,9 +449,10 @@ void downloadLanguage(){
 void XuatThongTinCaiDat_Sound(){
 	cout << setw(20) << "TEN CHU XE" << setw(25) << "Email" << setw(10) << "MSC" << setw(10) << "ODO" << setw(10) << "SEVICES" << setw(10) << "Media" << setw(10) << "Call" << setw(10) << "Navi" << setw(10) << "Notify"<< endl;
 	
-	for (int i = 0; i < sound.size(); ++i)
+	for (int i = 0; i < setting.size(); ++i)
 	{
-		sound.get(i)->xuatThongTin();
+		setting[i]->xuatThongTin();
+		setting[i]->xuatThongTinSound();
 	}
 	cout << endl;
 	system("pause");
@@ -499,9 +462,10 @@ void XuatThongTinCaiDat_Sound(){
 void XuatThongTinCaiDat_General(){
 	cout << setw(20) << "TEN CHU XE" << setw(25) << "Email" << setw(10) << "MSC" << setw(10) << "ODO" << setw(10) << "SEVICES" << setw(15) << "TimeZone" << setw(15) << "Language" << endl;
 	
-	for (int i = 0; i < general.size(); ++i)
+	for (int i = 0; i < setting.size(); ++i)
 	{
-		general.get(i)->xuatThongTin();
+		setting[i]->xuatThongTin();
+		setting[i]->xuatThongTinGeneral();
 	}
 	cout << endl;
 	system("pause");
@@ -511,54 +475,22 @@ void XuatThongTinCaiDat_General(){
 void XuatThongTinCaiDat_Display(){
 	cout << setw(20) << "TEN CHU XE" << setw(25) << "Email" << setw(10) << "MSC" << setw(10) << "ODO" << setw(10) << "SEVICES" << setw(10) << "Light" << setw(10) << "Screen" << setw(10) << "Taplo" << endl;
 	
-	for (int i = 0; i < display.size(); ++i)
+	for (int i = 0; i < setting.size(); ++i)
 	{
-		display.get(i)->xuatThongTin();
+		setting[i]->xuatThongTin();
+		setting[i]->xuatThongTinDisplay();
 	}
 	cout << endl;
 	system("pause");
 }
 
-//true: ton tai ma so ca nhan,  false: khong ton tai ma so ca nhan
-//location: vi tri co MSCN trung voi personalKey
-//selection: 1.ten chu xe,   2.ma so ca nhan
-bool KiemTraMSCNHoacTen(List<Setting*> setting, int size, string keyOrName, int& location, string selection)
-{
-	if (selection == "1")
-	{
-		for (int i = 0; i < size; ++i)
-		{
-			if (setting.get(i)->layTenChuXe().compare(keyOrName) == 0)//Neu 2 MSCN trung khop thi luu vi tri hien tai, tra ve true
-			{
-				location = i;
-				return true;
-			}
-		}
-	}
-	else
-	{
-		for (int i = 0; i < size; ++i)
-		{
-			if (setting.get(i)->layMaSoCaNhan().compare(keyOrName) == 0)//Neu 2 MSCN trung khop thi luu vi tri hien tai, tra ve true
-			{
-				location = i;
-				return true;
-			}
-		}
-	}
-
-	location = -1;
-	return false;
-}
-
 
 void XuatThongTinTatCaCaiDat(){
-	string selection;
-	string keyOrName;
-	bool foundDis, foundSou, foundGen; //true: co ton tai ma so ca nhan hoac ten chu xe,  false: khong ton tai ma so ca nhan hoac ten chu xe
+	string selection;//Luu lua chon cua nguoi dung
+	string keyOrName;//Luu ma so ca nhan hoac ten do nguoi dung nhap vao
 	char continues = 'n';
-	int locationDis, locationSou, locationGen; //Vi tri du lieu trong mang trung voi MSCN hoac ten chu xe dang tim kiem
-	string noInfo = "chua cai dat thong tin";
+	bool found;	//true: tim thay;  false: khong tim thay
+	int position = 0;	//Vi tri tim thay ten hoac ma so ca nhan trung khop trong mang setting[]
 
 	do
 	{
@@ -575,6 +507,7 @@ void XuatThongTinTatCaCaiDat(){
 	system("cls");
 	do
 	{
+		found = false;
 		if (selection == "1")
 			cout << "\n\t NHAP TEN CHU XE: ";
 		else
@@ -582,13 +515,29 @@ void XuatThongTinTatCaCaiDat(){
 		cin.ignore();
 		getline(cin, keyOrName);
 
-		//Kiem tra su ton tai cua du lieu co cung MSCN hoac ten chu xe
-		foundDis = KiemTraMSCNHoacTen(display, display.size(), keyOrName, locationDis, selection);
-		foundSou = KiemTraMSCNHoacTen(sound, sound.size(), keyOrName, locationSou, selection);
-		foundGen = KiemTraMSCNHoacTen(general, general.size(), keyOrName, locationGen, selection);
+		for (int i = 0; i < setting.size(); i++)
+		{
+			if (selection == "1")	//Nguoi dung chon xuat thong tin theo ten
+			{
+				if (setting[i]->layTenChuXe() == keyOrName)
+				{
+					found = true;
+					position = i;
+					break;
+				}
+			}
+			else //Nguoi dung chon xuat thong tin theo ma so ca nhan
+			{
+				if (setting[i]->layMaSoCaNhan() == keyOrName)
+				{
+					found = true;
+					position = i;
+					break;
+				}
+			}
+		}
 
-
-		if (foundDis == false && foundSou == false && foundGen == false)//Khong ton tai MSCN o 3 list display, sound, general
+		if (found == false)//Khong tim thay ma so ca nhan hoac ten
 		{
 			if (selection == "1")
 			{
@@ -617,55 +566,8 @@ void XuatThongTinTatCaCaiDat(){
 	} while (continues == 'y');
 
 	//Xuat thong tin chung: Ten chu xe, mscn, email, odo, km bao hanh
-	//Neu MSCN co ton tai thi in ra thong tin chung va chi in 1 lan
-	if (foundDis == true)
-	{
-		display.get(locationDis)->xuatThongTinChung();
-	}
-	else if (foundSou == true)
-	{
-		sound.get(locationSou)->xuatThongTinChung();
-	}
-	else
-		general.get(locationGen)->xuatThongTinChung();
-
-	//Xuat thong tin theo tung chuc nang
-	//Neu du lieu chua cai dat thi thong bao "chua cai dat thong tin"
-	cout << " --- Thong tin Display ---\n";
-	if (foundDis == true)
-	{
-		display.get(locationDis)->xuatThongTinRieng();//In thong tin rieng cua list display
-	}
-	else
-	{
-		cout << setiosflags(ios::left) << setw(23) << "LIGHT LEVEL" << setw(2) << ":" << resetiosflags(ios::left) << noInfo << endl;
-		cout << setiosflags(ios::left) << setw(23) << "SCREEN LIGHT LEVEL" << setw(2) << ":" << resetiosflags(ios::left) << noInfo << endl;
-		cout << setiosflags(ios::left) << setw(23) << "TAPLO LIGHT LEVEL" << setw(2) << ":" << resetiosflags(ios::left) << noInfo << endl;
-	}
-
-	cout << " --- Thong tin Sound ---\n";
-	if (foundSou == true)
-	{
-		sound.get(locationSou)->xuatThongTinRieng();//In thong tin rieng cua list sound
-	}
-	else
-	{
-		cout << setiosflags(ios::left) << setw(23) << "MEDIA LEVEL" << setw(2) << ":" << resetiosflags(ios::left) << noInfo << endl;
-		cout << setiosflags(ios::left) << setw(23) << "CALL LEVEL" << setw(2) << ":" << resetiosflags(ios::left) << noInfo << endl;
-		cout << setiosflags(ios::left) << setw(23) << "NAVIGATION LEVEL" << setw(2) << ":" << resetiosflags(ios::left) << noInfo << endl;
-		cout << setiosflags(ios::left) << setw(23) << "NOTIFICATION LEVEL" << setw(2) << ":" << resetiosflags(ios::left) << noInfo << endl;
-	}
-
-	cout << " --- Thong tin General ---\n";
-	if (foundGen == true)
-	{
-		general.get(locationGen)->xuatThongTinRieng();//In thong tin rieng cua list general
-	}
-	else
-	{
-		cout << setiosflags(ios::left) << setw(23) << "TIME ZONE" << setw(2) << ":" << resetiosflags(ios::left) << noInfo << endl;
-		cout << setiosflags(ios::left) << setw(23) << "LANGUAGE" << setw(2) << ":" << resetiosflags(ios::left) << noInfo << endl;
-	}
+	setting[position]->xuatThongTinChung();
+	setting[position]->xuatThongTinRieng();
 
 	cout << endl;
 	system("pause");
@@ -698,17 +600,17 @@ void CheckDigit(string& s)	//Kiem tra dau vao co phai so nguyen khong
 //Kiem tra trung lap thong tin
 //Tien hanh kiem tra khi doc xong du lieu tu file vao cac mang
 //Neu mang gom 2 phan tu tro len thi tien hanh kiem tra co trung khop MSCN khong
-void DuplicationOfInfo(List<Setting*> list)
+void DuplicationOfInfo()
 {
-	if (list.size() > 1)	//Neu mang gom 2 phan tu tro len thi tien hanh kiem tra co trung khop MSCN khong
+	if (setting.size() > 1)	//Neu mang gom 2 phan tu tro len thi tien hanh kiem tra co trung khop MSCN khong
 	{
-		for (int i = 0; i < list.size(); ++i)
+		for (int i = 0; i < setting.size(); ++i)
 		{
-			for (int j = 0; j < list.size(); ++j)
+			for (int j = 0; j < setting.size(); ++j)
 			{
 				if (i == j)	//Bo qua doi tuong dang xet
 					continue;
-				if (list.get(i)->layMaSoCaNhan() == list.get(j)->layMaSoCaNhan())	//So sanh MSCN
+				if (setting[i]->layMaSoCaNhan() == setting[j]->layMaSoCaNhan())	//So sanh MSCN
 				{
 					throw "\n\t(!) LOI (Du lieu dau vao bi trung lap thong tin)\n";
 				}
@@ -732,13 +634,7 @@ void ReadFromFile()
 	string selection;	//Trich ra lua chon cua tung chuc nang
 	bool endOfSequence;	//true: ket thuc chuoi;  false: chua ket thuc chuoi
 
-	Display disp;
-	Setting* dispPointer;	//Tro den vung nho lop Display
-	Sound snd;
-	Setting* sndPointer;	//Tro den vung nho lop Sound
-	General gen;
-	Setting* genPointer;	//Tro den vung nho lop General
-
+	Setting* p = NULL;
 
 	regex patternMain	//Regex pattern kiem tra email
 	("^[a-zA-Z0-9][a-zA-Z0-9.]{1,28}[a-zA-Z0-9]@[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9](\\.[a-z0-9]{2,4}){1,2}$");
@@ -753,6 +649,8 @@ void ReadFromFile()
 		}
 		while (getline(inFile, s))
 		{
+			p = new Setting;//Cap phat vung nho moi
+
 			if (s.find_first_of(";") == -1)
 			{
 				throw "\n\t(!) LOI (Du lieu dau vao phai co thong tin chung va thong tin rieng)\n";
@@ -803,6 +701,9 @@ void ReadFromFile()
 				throw "\n\t(!) LOI (Du lieu dau vao thieu thong tin rieng)\n";
 			}
 
+			//Nhap thong tin chung doc tu file cho con tro p
+			p->nhapThongTinChung(generalInfoArray[0], personalKey, email, stoi(odo), stoi(serviceRemind));
+
 			endOfSequence = false;
 			while (!endOfSequence)
 			{
@@ -837,18 +738,8 @@ void ReadFromFile()
 						throw "\n\t(!) LOI (Du lieu dau vao cua thong tin rieng khong hop le)\n";
 					}
 
-					//Nhap thong tin cho bien 'disp'
-					disp.set_car_name(generalInfoArray[0]);
-					disp.set_email(email);
-					disp.set_personal_key(personalKey);
-					disp.set_odo(stoi(odo));
-					disp.set_service_remind(stoi(serviceRemind));
-					disp.set_light_level(stoi(privateInfoArray[0]));
-					disp.set_screen_light_level(stoi(privateInfoArray[1]));
-					disp.set_taplo_light_level(stoi(privateInfoArray[2]));
-
-					dispPointer = new Display(disp);
-					display.add(dispPointer);	//Them thong tin vao mang display
+					//Nhap thong tin rieng cho chuc nang Display
+					p->nhapThongTinDisplay(stoi(privateInfoArray[0]), stoi(privateInfoArray[1]), stoi(privateInfoArray[2]));
 				}
 				else if (functionName == "Sound")
 				{
@@ -857,19 +748,8 @@ void ReadFromFile()
 						throw "\n\t(!) LOI (Du lieu dau vao cua thong tin rieng khong hop le)\n";
 					}
 
-					//Nhap thong tin cho bien 'snd'
-					snd.set_car_name(generalInfoArray[0]);
-					snd.set_email(email);
-					snd.set_personal_key(personalKey);
-					snd.set_odo(stoi(odo));
-					snd.set_service_remind(stoi(serviceRemind));
-					snd.set_media_level(stoi(privateInfoArray[0]));
-					snd.set_call_level(stoi(privateInfoArray[1]));
-					snd.set_navi_level(stoi(privateInfoArray[2]));
-					snd.set_notification_level(stoi(privateInfoArray[3]));
-
-					sndPointer = new Sound(snd);
-					sound.add(sndPointer);	//Them thong tin vao mang sound
+					//Nhap thong tin rieng cho chuc nang Sound
+					p->nhapThongTinSound(stoi(privateInfoArray[0]), stoi(privateInfoArray[1]), stoi(privateInfoArray[2]), stoi(privateInfoArray[3]));
 				}
 				else
 				{
@@ -879,29 +759,14 @@ void ReadFromFile()
 					}
 
 					//Nhap thong tin cho bien 'gen'
-					gen.set_car_name(generalInfoArray[0]);
-					gen.set_email(email);
-					gen.set_personal_key(personalKey);
-					gen.set_odo(stoi(odo));
-					gen.set_service_remind(stoi(serviceRemind));
-					gen.set_timeZone(privateInfoArray[0]);
-					gen.set_language(privateInfoArray[1]);
-
-					genPointer = new General(gen);
-					general.add(genPointer); //Them thong tin vao mang general
+					p->nhapThongTinGeneral(privateInfoArray[0], privateInfoArray[1]);
 				}
 			}
+			setting.push_back(p);	//Them du lieu vao mang setting
 		}
 		inFile.close();
 
-		//Kiem tra trung lap thong tin
-		DuplicationOfInfo(display);
-		DuplicationOfInfo(sound);
-		DuplicationOfInfo(general);
-
-		display.Sap_Xep();
-		sound.Sap_Xep();
-		general.Sap_Xep();
+		DuplicationOfInfo();	//Kiem tra trung lap thong tin (cung MSCN)
 	}
 	catch (const char* ch)
 	{
@@ -912,41 +777,11 @@ void ReadFromFile()
 	}
 }
 
-//Tim kiem vi tri phan tu co cung MSCN
-int PositionOfTheSamePersonalKey(List<Setting*> list, const string& personalKey)
-{
-	for (int i = 0; i < list.size(); ++i)
-	{
-		if (list.get(i)->layMaSoCaNhan() == personalKey)
-		{
-			return i;
-		}
-	}
-	return -1;	//Tra ve -1 khi khong co phan tu nao co MSCN trung voi MSCN duoc dua vao
-}
-
-//Ham lay thong tin chung
-void GetInfo(List<Setting*> list, int& position, string& carName, string& email, string& personalKey, int& odo, int& serviceRemind)
-{
-	carName = list.get(position)->layTenChuXe();
-	email = list.get(position)->layEmail();
-	personalKey = list.get(position)->layMaSoCaNhan();
-	odo = list.get(position)->layOdo();
-	serviceRemind = list.get(position)->layServiceRemind();
-}
 
 //Ham ghi du lieu len tap tin "Setting.txt"
 void WriteOnFile()
 {
 	ofstream outFile;
-	string carName, personalKey, email, lightLevel, screenLevel, taploLevel;
-	string mediaLevel, callLevel, naviLevel, notiLevel, timeZone, language;
-	int odo, serviceRemind;
-	string* generalArray = NULL;//Con tro tro den mang thong tin rieng cua doi tuong "general"
-	string* soundArray = NULL;	//Con tro tro den mang thong tin rieng cua doi tuong "sound"
-	string* displayArray = NULL;	//Con tro tro den mang thong tin rieng cua doi tuong "display"
-	int sndPos = -1;	//Vi tri phan tu trong mang "sound" co MSCN trung khop
-	int dispPos = -1;//Vi tri phan tu trong mang "display" co MSCN trung khop
 
 	try
 	{
@@ -956,88 +791,24 @@ void WriteOnFile()
 			throw "\n\tKhong mo duoc file \"Setting.txt\" de ghi du lieu\n";
 		}
 
-		//Ghi thong tin trong list "general"
-		for (int i = 0; i < general.size(); ++i)
+		for (int i = 0; i < setting.size(); i++)
 		{
-			GetInfo(general, i, carName, email, personalKey, odo, serviceRemind);//Lay thong tin chung
-			outFile << carName << "," << email << "," << personalKey << "," << odo << "," << serviceRemind << "; "; //Ghi thong tin chung vao file
+			outFile << setting[i]->layTenChuXe() << "," << setting[i]->layEmail() << "," << setting[i]->layMaSoCaNhan()
+				<< "," << setting[i]->layOdo() << "," << setting[i]->layServiceRemind() << "; "; //Ghi thong tin chung vao file
 
-			generalArray = general.get(i)->layThongTinRieng(generalArray);	//Tro den dia chi cua mang chua thong tin rieng 
-			timeZone = generalArray[0];
-			language = generalArray[1];
-			outFile << "General:" << timeZone << "," << language;//Ghi thong tin rieng vao file
+			outFile << "General:" << setting[i]->getTimezone() << "," << setting[i]->getLanguage();//Ghi thong tin General vao file
 
-			//Kiem tra MSCN cua phan tu trong list "sound" trung khop voi MSCN phan tu trong list "general" 
-			sndPos = PositionOfTheSamePersonalKey(sound, personalKey);
-			if (sndPos != -1)	//Bang -1: khong co phan tu nao trong list "sound" co MSCN trung voi MSCN dang xet
-			{
-				soundArray = sound.get(sndPos)->layThongTinRieng(soundArray);//Tro den dia chi cua mang chua thong tin rieng
-				mediaLevel = soundArray[0];
-				callLevel = soundArray[1];
-				naviLevel = soundArray[2];
-				notiLevel = soundArray[3];
-				outFile << ";Sound:" << mediaLevel << "," << callLevel << "," << naviLevel << "," << notiLevel;	//Ghi thong tin rieng vao file
-				sound.pop_element(sndPos);//Xoa phan tu tai vi tri sndPos trong mang "sound"
-			}
+			outFile << ";Sound:" << setting[i]->getMediaLevel() << "," << setting[i]->getCallLevel() << "," 
+				<< setting[i]->getNaviLevel() << "," << setting[i]->getNotiLevel();	//Ghi thong tin Sound vao file
 
-			//Kiem tra MSCN cua phan tu trong list "display" trung khop voi MSCN phan tu trong list "general" 
-			dispPos = PositionOfTheSamePersonalKey(display, personalKey);
-			if (dispPos != -1)
-			{
-				displayArray = display.get(dispPos)->layThongTinRieng(displayArray);
-				lightLevel = displayArray[0];
-				screenLevel = displayArray[1];
-				taploLevel = displayArray[2];
-				outFile << ";Display:" << lightLevel << "," << screenLevel << "," << taploLevel << "\n";//Ghi thong tin rieng vao file
-				display.pop_element(dispPos);//Xoa phan tu tai vi tri dispPos trong list "display"
-			}
-			else
-			{
-				outFile << "\n";
-			}
+			outFile << ";Display:" << setting[i]->getLightLevel() << "," << setting[i]->getScreenLightLevel() << "," 
+				<< setting[i]->getTaploLightLevel() << "\n";//Ghi thong tin Display vao file
 		}
 
-		//Ghi thong tin trong list "sound"
-		for (int i = 0; i < sound.size(); ++i)
+		//Giai phong bo nho cap phat cho mang setting
+		for (int i = 0; i < setting.size(); i++)
 		{
-			GetInfo(sound, i, carName, email, personalKey, odo, serviceRemind);//Lay thong tin chung
-			outFile << carName << "," << email << "," << personalKey << "," << odo << "," << serviceRemind << "; "; //Ghi thong tin chung vao file
-
-			soundArray = sound.get(i)->layThongTinRieng(soundArray);//Tro den dia chi cua mang chua thong tin rieng
-			mediaLevel = soundArray[0];
-			callLevel = soundArray[1];
-			naviLevel = soundArray[2];
-			notiLevel = soundArray[3];
-			outFile << "Sound:" << mediaLevel << "," << callLevel << "," << naviLevel << "," << notiLevel;	//Ghi thong tin rieng vao file
-
-			//Kiem tra MSCN cua phan tu trong list "display" trung khop voi MSCN phan tu trong list "sound" 
-			dispPos = PositionOfTheSamePersonalKey(display, personalKey);
-			if (dispPos != -1)
-			{
-				displayArray = display.get(dispPos)->layThongTinRieng(displayArray);
-				lightLevel = displayArray[0];
-				screenLevel = displayArray[1];
-				taploLevel = displayArray[2];
-				outFile << ";Display:" << lightLevel << "," << screenLevel << "," << taploLevel << "\n";//Ghi thong tin rieng vao file
-				display.pop_element(dispPos);//Xoa phan tu tai vi tri dispPos trong list "display"
-			}
-			else
-			{
-				outFile << "\n";
-			}
-		}
-
-		//Ghi thong tin trong list "display"
-		for (int i = 0; i < display.size(); ++i)
-		{
-			GetInfo(display, i, carName, email, personalKey, odo, serviceRemind);//Lay thong tin chung
-			outFile << carName << "," << email << "," << personalKey << "," << odo << "," << serviceRemind << "; "; //Ghi thong tin chung vao file
-
-			displayArray = display.get(i)->layThongTinRieng(displayArray);
-			lightLevel = displayArray[0];
-			screenLevel = displayArray[1];
-			taploLevel = displayArray[2];
-			outFile << "Display:" << lightLevel << "," << screenLevel << "," << taploLevel << "\n";//Ghi thong tin rieng vao file
+			delete setting[i];
 		}
 
 		outFile.close();

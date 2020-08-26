@@ -142,7 +142,6 @@
     <ClInclude Include="CommonInfo.h" />
     <ClInclude Include="Display.h" />
     <ClInclude Include="General.h" />
-    <ClInclude Include="list.h" />
     <ClInclude Include="Setting.h" />
     <ClInclude Include="Sound.h" />
   </ItemGroup>
@@ -154,7 +153,6 @@
   <ItemGroup>
     <ClCompile Include="Display.cpp" />
     <ClCompile Include="General.cpp" />
-    <ClCompile Include="list.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Setting.cpp" />
     <ClCompile Include="Sound.cpp" />

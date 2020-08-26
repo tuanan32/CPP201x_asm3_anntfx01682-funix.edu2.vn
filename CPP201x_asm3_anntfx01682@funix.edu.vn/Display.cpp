@@ -1,13 +1,47 @@
 #include "Display.h"
 
-Display::Display():Setting()
+int checkLevel(const char* ch)
+{
+	char c[21];
+	int ret;
+
+	do
+	{
+		try
+		{
+			cout << ch;
+			cin.getline(c, 20);
+			if (strlen(c) == 0 || strlen(c) > 1)
+			{
+				throw "\t(!) Nhap so nguyen tu 1 den 5\n";
+			}
+			else
+			{
+				if (c[0] >= 49 && c[0] <= 53)
+				{
+					ret = stoi(c);
+					break;
+				}
+				else
+					throw "\t(!) Nhap so nguyen tu 1 den 5\n";
+			}
+		}
+		catch (const char* errorName)
+		{
+			cout << errorName;
+		}
+	} while (true);
+	return ret;
+}
+
+Display::Display()
 {
 	light_level = 0;
 	screen_light_level = 0;
 	taplo_light_level = 0;
 }
 
-Display::Display(const Display& u):Setting(u)
+Display::Display(const Display& u)
 {
 	light_level = u.light_level;
 	screen_light_level = u.screen_light_level;
@@ -15,6 +49,18 @@ Display::Display(const Display& u):Setting(u)
 }
 
 Display::~Display(){}
+
+void Display::nhapThongTin()
+{
+	set_light_level(checkLevel("LIGHT LEVEL: "));
+	set_screen_light_level(checkLevel("SCREEN LIGHT LEVEL: "));
+	set_taplo_light_level(checkLevel("TAPLO LIGHT LEVEL: "));
+}
+
+void Display::xuatThongTin()
+{
+	cout << setw(10) << get_light_level() << setw(10) << get_screen_light_level() << setw(10) << get_taplo_light_level() << endl;
+}
 
 int Display::get_light_level(){
 	return light_level;
@@ -40,61 +86,11 @@ void Display::set_taplo_light_level(int data){
 	taplo_light_level = data;
 }
 
-string Display::layMaSoCaNhan()
-{
-	return getPersonalKey();
-}
-
-string Display::layTenChuXe()
-{
-	return getCarName();
-}
-
-string Display::layEmail()
-{
-	return getEmail();
-}
-
-int Display::layOdo()
-{
-	return getODO();
-}
-
-int Display::layServiceRemind()
-{
-	return getServiceRemind();
-}
-
 void Display::xuatThongTinRieng()
 {
 	cout << setiosflags(ios::left) << setw(23) << "LIGHT LEVEL" << setw(2) << ":" << get_light_level() << resetiosflags(ios::left) << endl;
 	cout << setiosflags(ios::left) << setw(23) << "SCREEN LIGHT LEVEL" << setw(2) << ":" << get_screen_light_level() << resetiosflags(ios::left) << endl;
 	cout << setiosflags(ios::left) << setw(23) << "TAPLO LIGHT LEVEL" << setw(2) << ":" << get_taplo_light_level() << resetiosflags(ios::left) << endl;
-}
-
-void Display::set_car_name(string data)
-{
-	setCarName(data);
-}
-
-void Display::set_personal_key(string data)
-{
-	setPersonalKey(data);
-}
-
-void Display::set_email(string data)
-{
-	setEmail(data);
-}
-
-void Display::set_odo(int data)
-{
-	setOdo(data);
-}
-
-void Display::set_service_remind(int data)
-{
-	setServiceRemind(data);
 }
 
 string* Display::layThongTinRieng(string* array)
@@ -105,16 +101,3 @@ string* Display::layThongTinRieng(string* array)
 	array[2] = to_string(get_taplo_light_level());
 	return array;
 }
-
-void Display::nhapThongTin(){
-	Setting::nhapThongTin();
-	set_light_level(checkLevel("LIGHT LEVEL: "));
-	set_screen_light_level(checkLevel("SCREEN LIGHT LEVEL: "));
-	set_taplo_light_level(checkLevel("TAPLO LIGHT LEVEL: "));
-}
-
-void Display::xuatThongTin(){
-	Setting::xuatThongTin();
-	cout << setw(10) << get_light_level() << setw(10) << get_screen_light_level() << setw(10) << get_taplo_light_level() << endl;
-}
-
